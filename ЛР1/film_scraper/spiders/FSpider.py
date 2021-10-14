@@ -183,8 +183,6 @@ class FSpider(Spider):
                                         options=chrome_options)
 
     def parse(self, response):
-        print("Success")
-        
         
         hour = datetime.now().hour
         if self.current_hour < hour or self.current_hour == 23 and hour == 0:
