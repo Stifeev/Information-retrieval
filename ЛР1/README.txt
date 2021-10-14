@@ -1,0 +1,1 @@
+”кажите полный путь к этой директории в файле ./film_scraper/film_scraper/settings.py
