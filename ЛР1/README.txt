@@ -1,3 +1,3 @@
-Укажите ПОЛНЫЙ путь к этой директории film_scraper в файле ./film_scraper/film_scraper/settings.py
-Запуск осуществляется командой ниже из директории ./film_scraper/film_scraper/spiders
+РЈРєР°Р¶РёС‚Рµ РџРћР›РќР«Р™ РїСѓС‚СЊ Рє СЌС‚РѕР№ РґРёСЂРµРєС‚РѕСЂРёРё film_scraper РІ С„Р°Р№Р»Рµ ./film_scraper/film_scraper/settings.py
+Р—Р°РїСѓСЃРє РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ РєРѕРјР°РЅРґРѕР№ РЅРёР¶Рµ РёР· РґРёСЂРµРєС‚РѕСЂРёРё ./film_scraper/film_scraper/spiders
 $ scrapy runspider FSpider.py
