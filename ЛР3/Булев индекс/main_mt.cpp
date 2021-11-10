@@ -10,7 +10,7 @@
 #include <time.h>
 #include <algorithm>
 #include <locale>
-#include <Windows.h> // РґР»СЏ WideCharToMultiByte (СЂР°Р±РѕС‚Р° СЃ РєРѕРґРёСЂРѕРІРєР°РјРё РїРµСЂРµРјРµРЅРЅРѕР№ РґР»РёРЅС‹)
+#include <Windows.h> // для WideCharToMultiByte (работа с кодировками переменной длины)
 #include <omp.h>
 
 namespace fs = std::filesystem;
@@ -49,69 +49,39 @@ do                                                                  \
 }                                                                   \
 while(0);
 
-#define DESCRIPTION  L"usage: ./Р‘СѓР»РµРІ\\ РёРЅРґРµРєСЃ.exe "                                 \
-                     L"-i \'Р°Р±СЃ. РїСѓС‚СЊ Рє РєРѕСЂРїСѓСЃСѓ\' "                                  \
-                     L"-o \'Р°Р±СЃ. РїСѓС‚СЊ Рє РёРЅРґРµРєСЃСѓ\' "                                  \
-                     L"-t \'Р°Р±СЃ. РїСѓС‚СЊ Рє РґРёСЂРµРєС‚РѕСЂРёРё СЃ РІСЂРµРјРµРЅРЅС‹РјРё С„Р°Р№Р»Р°РјРё"             \
+#define DESCRIPTION  L"usage: ./Булев\\ индекс.exe "                                 \
+                     L"-i \'абс. путь к корпусу\' "                                  \
+                     L"-o \'абс. путь к индексу\' "                                  \
+                     L"-t \'абс. путь к директории с временными файлами"             \
                      L"\' [-create] [-merge] [-clear]\n"                             \
-                     L"РіРґРµ С„Р»Р°РіРё РѕР·РЅР°С‡Р°СЋС‚:\n"                                        \
-                     L"-create - СЃРѕР·РґР°С‚СЊ Р±Р»РѕС‡РЅС‹Р№ РёРЅРґРµРєСЃ\n"                           \
-                     L"-merge - РІС‹РїРѕР»РЅРёС‚СЊ СЃР»РёСЏРЅРёРµ Р±Р»РѕС‡РЅРѕРіРѕ РёРЅРґРµРєСЃР°\n"                \
-                     L"-clear - РѕС‡РёСЃС‚РёС‚СЊ РїР°РїРєСѓ СЃ РІСЂРµРјРµРЅРЅС‹РјРё С„Р°Р№Р»Р°РјРё РїРѕСЃР»Рµ СЃР»РёСЏРЅРёСЏ\n"
+                     L"где флаги означают:\n"                                        \
+                     L"-create - создать блочный индекс\n"                           \
+                     L"-merge - выполнить слияние блочного индекса\n"                \
+                     L"-clear - очистить папку с временными файлами после слияния\n"
 
-// РќР°С‡Р°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РґР»СЏ СЃС‡РёС‚С‹РІР°РЅРёСЏ РѕРґРЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р°
+// Начальный размер буфера для считывания одного документа
 #define BUF_SIZE 50000 
 
 #define OMP_NUM_THREADS 4
 
 set<wstring> EXTENSIONS = { L".json", L".jsonlines", L".txt" };
 
-int string_to_wide_string(const vector<char> &str, vector<wchar_t> &wstr)
-{
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, 
-                                          str.data(), str.size(), 
-                                          NULL, 0);
-    
-    wstr.resize(size_needed);
-
-    MultiByteToWideChar(CP_UTF8, 0, 
-                        str.data(), str.size(),
-                        wstr.data(), size_needed);
-    return size_needed;
-}
-
-int wide_string_to_string(const vector<wchar_t> &wstr, vector<char> &str)
-{
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, 
-                                          wstr.data(), wstr.size(), 
-                                          NULL, 0, 
-                                          NULL, NULL);
-    
-    str.resize(size_needed);
-
-    WideCharToMultiByte(CP_UTF8, 0, 
-                        wstr.data(), wstr.size(), 
-                        str.data(), str.size(), 
-                        NULL, NULL);
-    return size_needed;
-}
-
 bool get_doc(FILE *fp, vector<wchar_t> &buf)
 {
     /*
-    * Р—Р°РїРёСЃР°С‚СЊ РґРѕРєСѓРјРµРЅС‚ РІ Р±СѓС„РµСЂ
+    * Записать документ в буфер
     */
 
     bool end;
-    int offset=0,
-        len=0;
+    int offset = 0,
+        len = 0;
 
     buf.resize(BUF_SIZE);
 
     while (!(end = (fgetws(buf.data() + offset, buf.size() - offset, fp) == NULL)))
     {
-        len = wcslen(buf.data()); // РґР»РёРЅР° Р±СѓС„РµСЂР° РІ СЃРёРјРІРѕР»Р°С…
-        
+        len = wcslen(buf.data()); // длина буфера в символах
+
         if ((len + 1) == buf.size() && buf[len - 1] != L'\n') // overflow
         {
             buf.resize(buf.size() * 2);
@@ -125,7 +95,7 @@ bool get_doc(FILE *fp, vector<wchar_t> &buf)
         }
     }
 
-    buf.resize(len); // СѓР±РёСЂР°РµРј Р»РёС€РЅРµРµ
+    buf.resize(len); // убираем лишнее
     return !end;
 }
 
@@ -134,13 +104,13 @@ struct postings_list
     vector<int> docs_id;
     vector<int> docs_freq;
 
-    postings_list() // РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ 1
+    postings_list() // конструктор 1
     {
         docs_id = vector<int>(0);
         docs_freq = vector<int>(0);
     }
 
-    postings_list(int id) // РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ 2
+    postings_list(int id) // конструктор 2
     {
         docs_id = { id };
         docs_freq = { 1 };
@@ -151,7 +121,7 @@ void get_terms(const vector<wchar_t> &document, int doc_id,
                map<wstring, postings_list *> &tree)
 {
     /*
-    * РџРѕР»СѓС‡РёС‚СЊ С‚РµСЂРјС‹
+    * Получить термы
     */
     bool end = true;
     int i;
@@ -166,22 +136,22 @@ void get_terms(const vector<wchar_t> &document, int doc_id,
             term += towlower(document[i]);
             end = false;
         }
-        else if (!end) // Р Р°Р·РґРµР»РёС‚РµР»СЊ РЅР°Р№РґРµРЅ
+        else if (!end) // Разделитель найден
         {
             auto ptr = tree.find(term);
-            if (ptr == tree.end()) // С‚РµСЂРјРёРЅ РЅРµ РЅР°Р№РґРµРЅ
+            if (ptr == tree.end()) // термин не найден
             {
                 tree[term] = new postings_list(doc_id);
             }
-            else // РЅР°Р№РґРµРЅ
+            else // найден
             {
-                if(ptr->second->docs_id.back() == doc_id)
+                if (ptr->second->docs_id.back() == doc_id)
                 {
-                    ptr->second->docs_freq.back()++; // СѓРІРµР»РёС‡РёРІР°РµРј С‡Р°СЃС‚РѕС‚Сѓ
+                    ptr->second->docs_freq.back()++; // увеличиваем частоту
                 }
                 else
                 {
-                    ptr->second->docs_id.push_back(doc_id); // РґРѕР±Р°РІР»СЏРµРј РґРѕРєСѓРјРµРЅС‚
+                    ptr->second->docs_id.push_back(doc_id); // добавляем документ
                     ptr->second->docs_freq.push_back(1);
                 }
             }
@@ -194,17 +164,19 @@ void get_terms(const vector<wchar_t> &document, int doc_id,
 
 int wmain(int argc, wchar_t *argv[])
 {
-    setlocale(LC_ALL, "Russian");
+    setlocale(LC_CTYPE, "rus"); // кодировка на поток вывода
+    SetConsoleCP(1251);         // кодировка на поток ввода
+    SetConsoleOutputCP(1251);   // кодировка на поток вывода
 
-    bool create=false, merge=false, clear=true;
+    bool create = false, merge = false, clear = true;
     vector<wchar_t> buf[OMP_NUM_THREADS];
     int i, j, n_files;
 
-    uint offset, size, 
+    uint offset, size,
          n_chars, n_docs, n_terms;
 
-    path path2corpus=L"", path2index=L"./index", path2tmp=L"./tmp";
- 
+    path path2corpus = L"", path2index = L"./index", path2tmp = L"./tmp";
+
     wchar_t scheme_path2block_terms[256], scheme_path2block_postings_list[256], scheme_path2block_docs_id[256],
             path2block_terms[256], path2block_postings_list[256], path2block_docs_id[256],
             path2file[256];
@@ -213,11 +185,11 @@ int wmain(int argc, wchar_t *argv[])
 
     high_resolution_clock::time_point time_start, time_end;
     double duration;
-    
+
     time_start = high_resolution_clock::now();
     double total_size = 0, total_terms = 0, total_documents = 0;
 
-    /* Р Р°Р·Р±РѕСЂ РїР°СЂР°РјРµС‚СЂРѕРІ РІС…РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё */
+    /* Разбор параметров входной строки */
     for (i = 1; i < argc; i++)
     {
         if (_wcsicmp(argv[i], L"-create") == 0)
@@ -257,9 +229,9 @@ int wmain(int argc, wchar_t *argv[])
 
     if (create)
     {
-        /* РЎРѕР·РґР°РЅРёРµ Р±Р»РѕРєРѕРІ */
+        /* Создание блоков */
 
-        INFO_HANDLE(L"РЎРѕР·РґР°РЅРёРµ Р±Р»РѕС‡РЅРѕРіРѕ РёРЅРґРµРєСЃР°");
+        INFO_HANDLE(L"Создание блочного индекса");
 
         vector<uint> offsets[OMP_NUM_THREADS];
         map<wstring, postings_list *> tree[OMP_NUM_THREADS];
@@ -273,7 +245,7 @@ int wmain(int argc, wchar_t *argv[])
             tree[i] = {};
         }
 
-        /* РЎРѕР·РґР°РЅРёРµ РґРёСЂРµРєС‚РѕСЂРёР№ */
+        /* Создание директорий */
         if (!fs::exists(path2index))
         {
             fs::create_directories(path2index);
@@ -284,7 +256,7 @@ int wmain(int argc, wchar_t *argv[])
             fs::create_directories(path2tmp);
         }
 
-        /* РЎР±РѕСЂ РїСѓС‚РµР№ */
+        /* Сбор путей */
         for (auto iter : fs::recursive_directory_iterator(path2corpus))
         {
             if (iter.is_regular_file() && EXTENSIONS.find(iter.path().extension()) != EXTENSIONS.end())
@@ -294,9 +266,9 @@ int wmain(int argc, wchar_t *argv[])
             }
         }
 
-        n_files = pathes.size(); // РљРѕР»РёС‡РµСЃС‚РІРѕ С„Р°Р№Р»РѕРІ
+        n_files = pathes.size(); // Количество файлов
 
-        /* РЎРѕСЂС‚РёСЂРѕРІРєР° РЅР°Р·РІР°РЅРёР№ С„Р°Р№Р»РѕРІ РїРѕ СѓР±С‹РІР°РЅРёСЋ РёС… СЂР°Р·РјРµСЂРѕРІ */
+        /* Сортировка названий файлов по убыванию их размеров */
         auto comp = [](const path &l, const path &r) -> bool
         {
             return fs::file_size(l) < fs::file_size(r);
@@ -304,18 +276,18 @@ int wmain(int argc, wchar_t *argv[])
 
         std::sort(pathes.begin(), pathes.end(), comp);
 
-        /* РЎРѕР·РґР°РЅРёРµ Р±Р»РѕРєРѕРІ */
+        /* Создание блоков */
         path *ptr_pathes = pathes.data();
         #pragma omp parallel num_threads(OMP_NUM_THREADS)                                                                                   \
-                                 shared(buf, offsets, tree, ptr_pathes)                                                                     \
-                                 firstprivate(n_files, scheme_path2block_terms, scheme_path2block_postings_list, scheme_path2block_docs_id) \
-                                 private(path2file, path2block_terms, path2block_postings_list, path2block_docs_id,                         \
-                                         i, j, fp_file, fp_terms, fp_postings_list, fp_docs_id, offset, n_docs, size, n_chars, n_terms)
+                                         shared(buf, offsets, tree, ptr_pathes)                                                                     \
+                                         firstprivate(n_files, scheme_path2block_terms, scheme_path2block_postings_list, scheme_path2block_docs_id) \
+                                         private(path2file, path2block_terms, path2block_postings_list, path2block_docs_id,                         \
+                                                 i, j, fp_file, fp_terms, fp_postings_list, fp_docs_id, offset, n_docs, size, n_chars, n_terms)
         {
             int id = omp_get_thread_num(),
                 id_offset = OMP_NUM_THREADS;
 
-            for (i = id; i < n_files; i += id_offset) // Р¦РёРєР» РїРѕ С„Р°Р№Р»Р°Рј
+            for (i = id; i < n_files; i += id_offset) // Цикл по файлам
             {
                 wcscpy(path2file, ptr_pathes[i].c_str());
                 swprintf(path2block_terms, scheme_path2block_terms, i + 1);
@@ -336,11 +308,11 @@ int wmain(int argc, wchar_t *argv[])
 
                 n_docs = 0;
 
-                while (get_doc(fp_file, buf[id])) // Р¦РёРєР» РїРѕ РґРѕРєСѓРјРµРЅС‚Р°Рј
+                while (get_doc(fp_file, buf[id])) // Цикл по документам
                 {
                     n_docs++;
 
-                    /* РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂ РґРѕРєСѓРјРµРЅС‚Р° РІ Р±Р°Р№С‚Р°С… (ftell РЅРµ СЂР°Р±РѕС‚Р°РµС‚ РґР»СЏ С‚РµРєСЃС‚РѕРІС‹С… С„Р°Р№Р»РѕРІ) */
+                    /* Получаем размер документа в байтах (ftell не работает для текстовых файлов) */
                     size = WideCharToMultiByte(CP_UTF8, 0,
                                                buf[id].data(), buf[id].size(),
                                                NULL, 0,
@@ -349,23 +321,23 @@ int wmain(int argc, wchar_t *argv[])
                     offsets[id].push_back(offset);
                     offset += size + 1;
 
-                    /* РЎРѕР·РґР°С‘Рј С‚РµСЂРјС‹ */
+                    /* Создаём термы */
                     get_terms(buf[id], n_docs - 1,
-                              tree[id]);
+                        tree[id]);
                 }
 
                 fclose(fp_file);
 
                 offsets[id].push_back(offset);
 
-                /* Р—Р°РїРѕР»РЅРµРЅРёРµ С„Р°Р№Р»Р° СЃ С‚Р°Р±Р»РёС†РµР№ РґРѕРєСѓРјРµРЅС‚РѕРІ docs_id */
+                /* Заполнение файла с таблицей документов docs_id */
 
-                 /* РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕРєСѓРјРµРЅС‚РѕРІ */
+                 /* Количество документов */
                 fwrite(&n_docs, sizeof(uint), 1, fp_docs_id);
 
                 n_chars = wcslen(path2file);
                 offset = 0;
-                for (j = 0; j < n_docs + 1; j++) // СЃРјРµС‰РµРЅРёР№ Р±РѕР»СЊС€Рµ РЅР° РµРґРёРЅРёС†Сѓ (С…СЂР°РЅРёРј РёС… СЃСѓРјРјСѓ)
+                for (j = 0; j < n_docs + 1; j++) // смещений больше на единицу (храним их сумму)
                 {
                     fwrite(&offset, sizeof(uint), 1, fp_docs_id);
                     offset += sizeof(uint) + n_chars * sizeof(wchar_t) + 2 * sizeof(uint);
@@ -381,7 +353,7 @@ int wmain(int argc, wchar_t *argv[])
 
                 fclose(fp_docs_id);
 
-                /* Р—Р°РїРѕР»РЅРµРЅРёРµ С„Р°Р№Р»Р° СЃ С‚РµСЂРјР°РјРё terms Рё СЃР»РѕРІРѕРїРѕР·РёС†РёСЏРјРё postings_list */
+                /* Заполнение файла с термами terms и словопозициями postings_list */
                 n_terms = tree[id].size();
                 fwrite(&n_terms, sizeof(uint), 1, fp_terms);
                 fwrite(&n_terms, sizeof(uint), 1, fp_postings_list);
@@ -399,8 +371,8 @@ int wmain(int argc, wchar_t *argv[])
 
                     n_docs = iter.second->docs_id.size();
                     fwrite(&n_docs, sizeof(uint), 1, fp_postings_list);
-                    fwrite(iter.second->docs_id.data(), sizeof(int), n_docs, fp_postings_list);   // СЃРїРёСЃРѕРє РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ
-                    fwrite(iter.second->docs_freq.data(), sizeof(int), n_docs, fp_postings_list); // СЃРїРёСЃРѕРє С‡Р°СЃС‚РѕС‚
+                    fwrite(iter.second->docs_id.data(), sizeof(int), n_docs, fp_postings_list);   // список идентификаторов
+                    fwrite(iter.second->docs_freq.data(), sizeof(int), n_docs, fp_postings_list); // список частот
 
                     offset += sizeof(uint) + 2 * n_docs * sizeof(int);
                 }
@@ -408,7 +380,7 @@ int wmain(int argc, wchar_t *argv[])
                 fclose(fp_terms);
                 fclose(fp_postings_list);
 
-                for (auto iter : tree[id]) // РѕС‡РёСЃС‚РєР° РґРµСЂРµРІР°
+                for (auto iter : tree[id]) // очистка дерева
                 {
                     delete iter.second;
                 }
@@ -419,9 +391,9 @@ int wmain(int argc, wchar_t *argv[])
 
     if (merge)
     {
-        /* РЎР»РёСЏРЅРёРµ Р±Р»РѕРєРѕРІ */
+        /* Слияние блоков */
 
-        /* РЎР±РѕСЂ РїСѓС‚РµР№ */
+        /* Сбор путей */
 
         int n_blocks = 0;
         for (auto iter : fs::recursive_directory_iterator(path2tmp))
@@ -438,9 +410,9 @@ int wmain(int argc, wchar_t *argv[])
 
         vector<queue<term_line>> terms(n_blocks);
         term_line lterm = { L"", 0 };
-        FILE *fp_doc_id=NULL, *fp_term=NULL, *fp_posting_list;
+        FILE *fp_doc_id = NULL, *fp_term = NULL, *fp_posting_list;
 
-        FILE *fp_terms=NULL, *fp_docs_id = NULL;
+        FILE *fp_terms = NULL, *fp_docs_id = NULL;
 
         vector<FILE *> fp_postings_list(n_blocks, NULL);
 
@@ -450,25 +422,25 @@ int wmain(int argc, wchar_t *argv[])
         wcscpy(path2docs_id, (path2index / "docs_id.data").c_str());
         wcscpy(path2terms, (path2index / "terms.data").c_str());
         wcscpy(path2postings_list, (path2index / "postings_list.data").c_str());
-        
-        /* РЎРѕР·РґР°РЅРёРµ РѕС‡РµСЂРµРґРµР№ С‚РµСЂРјРѕРІ */
+
+        /* Создание очередей термов */
 
         terms_total = 0;
-        for (i = 0; i < n_blocks; i++) // РћС‚РєСЂС‹РІР°РµРј РІСЃРµ С„Р°Р№Р»С‹ СЃ С‚РµСЂРјР°РјРё Рё СЃРѕР·РґР°С‘Рј РѕС‡РµСЂРµРґРё
+        for (i = 0; i < n_blocks; i++) // Открываем все файлы с термами и создаём очереди
         {
-            wprintf(L"\r[INFO] РЎРѕР·РґР°РЅРёРµ РѕС‡РµСЂРµРґРµР№ С‚РµСЂРјРѕРІ: %4d Р±Р»РѕРє РёР· %4d", i + 1, n_blocks);
+            wprintf(L"\r[INFO] Создание очередей термов: %4d блок из %4d", i + 1, n_blocks);
             swprintf(path2block_terms, scheme_path2block_terms, i + 1);
             fp_terms = _wfopen(path2block_terms, L"rb");
 
             fread(&n_terms, sizeof(uint), 1, fp_terms);
             terms_total += n_terms;
 
-            for (j = 0; j < n_terms; j++) // С‡С‚РµРЅРёРµ С‚РµСЂРјРѕРІ
+            for (j = 0; j < n_terms; j++) // чтение термов
             {
                 fread(&n_chars, sizeof(uint), 1, fp_terms);
                 lterm.term.resize(n_chars);
-                fread(lterm.term.data(), sizeof(wchar_t), n_chars, fp_terms); // С‡РёС‚Р°РµРј С‚РµСЂРј
-                fread(&lterm.offset, sizeof(uint), 1, fp_terms); // С‡РёС‚Р°РµРј СЃРґРІРёРі
+                fread(lterm.term.data(), sizeof(wchar_t), n_chars, fp_terms); // читаем терм
+                fread(&lterm.offset, sizeof(uint), 1, fp_terms); // читаем сдвиг
 
                 terms[i].push(lterm);
             }
@@ -477,23 +449,23 @@ int wmain(int argc, wchar_t *argv[])
         }
         wprintf(L"\n");
 
-        /* РЎР»РёСЏРЅРёРµ docs_id */
+        /* Слияние docs_id */
 
         uint shift, last_shift;
-        vector<uint> shifts(n_blocks + 1); // СЃРґРІРёРіРё РїРѕ docs_id
+        vector<uint> shifts(n_blocks + 1); // сдвиги по docs_id
         vector<uint> offsets = {};
-        wstring doc_name=L"";
+        wstring doc_name = L"";
 
         offset = 0;
         shift = 0;
         last_shift = 0;
 
-        /* РћР±СЂР°Р±РѕС‚РєР° Р±Р»РѕРєРѕРІ СЃРјРµС‰РµРЅРёР№ РїРµСЂРµРґ С‚Р°Р±Р»РёС†РµР№ */
+        /* Обработка блоков смещений перед таблицей */
         for (i = 0; i < n_blocks; i++)
         {
             swprintf(path2block_docs_id, scheme_path2block_docs_id, i + 1);
             fp_docs_id = _wfopen(path2block_docs_id, L"rb");
-            
+
             fread(&n_docs, sizeof(uint), 1, fp_docs_id);
             shifts[i] = offset;
             offset += n_docs;
@@ -501,8 +473,8 @@ int wmain(int argc, wchar_t *argv[])
             offsets.resize(offsets.size() + n_docs);
             fread(offsets.data() + offsets.size() - n_docs,
                   sizeof(uint), n_docs, fp_docs_id);
-            
-            for (j = 0; j < n_docs; j++) // РїРµСЂРµСЂР°СЃС‡С‘С‚ СЃРјРµС‰РµРЅРёР№ РІ С‚Р°Р±Р»РёС†Рµ
+
+            for (j = 0; j < n_docs; j++) // перерасчёт смещений в таблице
             {
                 offsets[shifts[i] + j] += shift;
             }
@@ -521,7 +493,7 @@ int wmain(int argc, wchar_t *argv[])
 
         for (i = 0; i < n_blocks; i++)
         {
-            wprintf(L"\r[INFO] РЎР»РёСЏРЅРёРµ docs_id: %4d Р±Р»РѕРє РёР· %4d", i + 1, n_blocks);
+            wprintf(L"\r[INFO] Слияние docs_id: %4d блок из %4d", i + 1, n_blocks);
             swprintf(path2block_docs_id, scheme_path2block_docs_id, i + 1);
             fp_docs_id = _wfopen(path2block_docs_id, L"rb");
             fread(&n_docs, sizeof(uint), 1, fp_docs_id);
@@ -537,8 +509,8 @@ int wmain(int argc, wchar_t *argv[])
 
                 fwrite(&n_chars, sizeof(uint), 1, fp_doc_id);
                 fwrite(doc_name.data(), sizeof(wchar_t), n_chars, fp_doc_id);
-                fread(&offset, sizeof(uint), 1, fp_doc_id);
-                fread(&size, sizeof(uint), 1, fp_doc_id);
+                fwrite(&offset, sizeof(uint), 1, fp_doc_id);
+                fwrite(&size, sizeof(uint), 1, fp_doc_id);
             }
 
             fclose(fp_docs_id);
@@ -552,21 +524,21 @@ int wmain(int argc, wchar_t *argv[])
         fseek(fp_term, sizeof(uint), SEEK_SET);
         fseek(fp_posting_list, sizeof(uint), SEEK_SET);
 
-        /* Р’Р·СЏС‚РёРµ РјРёРЅРёРјСѓРјР° РёР· С‚РµСЂРјРѕРІ Рё СЃРѕР·РґР°РЅРёРµ СЃРєРѕРЅРєР°С‚РµРЅРёСЂРѕРІР°РЅРЅС‹С… СЃРїРёСЃРєРѕРІ */
+        /* Взятие минимума из термов и создание сконкатенированных списков */
 
-        wstring min_term=L"РЎС‚Р°СЂС‚";
+        wstring min_term = L"Старт";
         vector<int> active_blocks(n_blocks);
         vector<int> docs_id = {};
         vector<int> docs_freq = {};
 
-        /* РћС‚РєСЂС‹С‚РёРµ Р±Р»РѕРєРѕРІ СЃРѕ СЃР»РѕРІРѕРїРѕР·РёС†РёСЏРјРё */
+        /* Открытие блоков со словопозициями */
         for (i = 0; i < n_blocks; i++)
         {
             swprintf(path2block_postings_list, scheme_path2block_postings_list, i + 1);
             fp_postings_list[i] = _wfopen(path2block_postings_list, L"rb");
         }
 
-        INFO_HANDLE(L"РЎР»РёСЏРЅРёРµ СЃР»РѕРїРѕР·РёС†РёР№ С‚РµСЂРјРѕРІ");
+        INFO_HANDLE(L"Слияние слопозиций термов");
 
         terms_current = terms_total;
         offset = 0;
@@ -579,28 +551,28 @@ int wmain(int argc, wchar_t *argv[])
             min_term = WCHAR_MAX;
             active_blocks.resize(0);
 
-            /* РњРёРЅРёРјСѓРј РёР· С‚РµСЂРјРѕРІ */
+            /* Минимум из термов */
             for (i = 0; i < n_blocks; i++)
             {
-                if(terms[i].empty()) continue;
+                if (terms[i].empty()) continue;
 
                 min_term = min(terms[i].front().term, min_term);
             }
-            /* Р’С‹РґРµР»РµРЅРёРµ РёРЅРґРµРєСЃРѕРІ Р°РєС‚РёРІРЅС‹С… Р±Р»РѕРєРѕРІ */
+            /* Выделение индексов активных блоков */
             for (i = 0; i < n_blocks; i++)
             {
-                if(terms[i].front().term == min_term)
+                if (!terms[i].empty() && terms[i].front().term == min_term)
                     active_blocks.push_back(i);
             }
 
             docs_id.resize(0);
             docs_freq.resize(0);
 
-            for (i = 0; i < active_blocks.size(); i++) // С†РёРєР» РїРѕ Р°РєС‚РёРІРЅС‹Рј Р±Р»РѕРєР°Рј
+            for (i = 0; i < active_blocks.size(); i++) // цикл по активным блокам
             {
-                fseek(fp_postings_list[active_blocks[i]], 
-                      terms[active_blocks[i]].front().offset + sizeof(uint), 
-                      SEEK_SET);
+                fseek(fp_postings_list[active_blocks[i]],
+                    terms[active_blocks[i]].front().offset + sizeof(uint),
+                    SEEK_SET);
                 fread(&n_docs, sizeof(uint), 1, fp_postings_list[active_blocks[i]]);
 
                 docs_id.resize(docs_id.size() + n_docs);
@@ -609,12 +581,12 @@ int wmain(int argc, wchar_t *argv[])
                 fread(docs_id.data() + docs_id.size() - n_docs, sizeof(int), n_docs, fp_postings_list[active_blocks[i]]);
                 fread(docs_freq.data() + docs_freq.size() - n_docs, sizeof(int), n_docs, fp_postings_list[active_blocks[i]]);
 
-                for (j = 0; j < n_docs; j++) // РІС‹РїРѕР»РЅСЏРµРј СЃРјРµС‰РµРЅРёРµ id
+                for (j = 0; j < n_docs; j++) // выполняем смещение id
                 {
                     docs_id[docs_id.size() - n_docs + j] += shifts[active_blocks[i]];
                 }
 
-                terms[active_blocks[i]].pop(); // СѓР±РёСЂР°РµРј РёР· РѕС‡РµСЂРµРґРё
+                terms[active_blocks[i]].pop(); // убираем из очереди
                 terms_current--;
             }
 
@@ -628,18 +600,18 @@ int wmain(int argc, wchar_t *argv[])
             fwrite(min_term.data(), sizeof(wchar_t), n_chars, fp_term);
             fwrite(&offset, sizeof(uint), 1, fp_term);
             offset += sizeof(uint) + 2u * n_docs * sizeof(int);
-            
+
             current_time = time(NULL);
 
             if (current_time > current_sec)
             {
-                wprintf(L"\r[INFO] РћСЃС‚Р°Р»РѕСЃСЊ С‚РµСЂРјРѕРІ: %12d", terms_current);
+                wprintf(L"\r[INFO] Осталось термов: %12d", terms_current);
                 current_sec = current_time;
             }
             n_terms++;
         }
 
-        wprintf(L"\r[INFO] РћСЃС‚Р°Р»РѕСЃСЊ С‚РµСЂРјРѕРІ: %12d", terms_current);
+        wprintf(L"\r[INFO] Осталось термов: %12d", terms_current);
         wprintf(L"\n");
 
         fseek(fp_term, 0, SEEK_SET);
@@ -657,30 +629,30 @@ int wmain(int argc, wchar_t *argv[])
             swprintf(path2block_postings_list, scheme_path2block_postings_list, i + 1);
             fclose(fp_postings_list[i]);
         }
-        
+
         if (clear)
         {
-            INFO_HANDLE(L"РћС‡РёСЃС‚РєР° РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ");
+            INFO_HANDLE(L"Очистка временных файлов");
 
             fs::remove_all(path2tmp);
         }
     }
 
-    if (create && merge) // РІС‹РІРѕРґРёРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
+    if (create && merge) // выводим статистику
     {
         time_end = high_resolution_clock::now();
         duration = (double)std::chrono::duration_cast<milliseconds>(time_end - time_start).count();
 
-        INFO_HANDLE(L"РћР±С‰РµРµ С‡РёСЃР»Рѕ С‚РµСЂРјРѕРІ РІ СЃР»РѕРІР°СЂРµ = %.0lf\n"                                          \
-                    L"Р’СЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ = %.1lf sec, СЂР°Р·РјРµСЂ РєРѕСЂРїСѓСЃР° = %.3lf Gb, РґРѕРєСѓРјРµРЅС‚РѕРІ = %.0lf\n"   \
-                    L"РЎСЂРµРґРЅСЏСЏ СЃРєРѕСЂРѕСЃС‚СЊ РЅР° РґРѕРєСѓРјРµРЅС‚ = %.3lf ms\n"                                       \
-                    L"РЎСЂРµРґРЅСЏСЏ СЃРєРѕСЂРѕСЃС‚СЊ РЅР° РєРёР»РѕР±Р°Р№С‚ = %.3lf ms",
-                    total_terms, 
+        INFO_HANDLE(L"Общее число термов в словаре = %.0lf\n"                                          \
+                    L"Время выполнения = %.1lf sec, размер корпуса = %.3lf Gb, документов = %.0lf\n"   \
+                    L"Средняя скорость на документ = %.3lf ms\n"                                       \
+                    L"Средняя скорость на килобайт = %.3lf ms",
+                    total_terms,
                     duration / 1e3, total_size / (1024. * 1024. * 1024.), total_documents,
                     duration / total_documents,
                     (duration / total_size) * 1024);
     }
-    
+
 
     return 0;
 }
