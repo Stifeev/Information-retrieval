@@ -319,6 +319,18 @@ void union_postings(const vector<int> &p1, const vector<int> &p2,
             j++;
         }
     }
+
+    if (i < p1.size())
+    {
+        answer.resize(answer.size() + p1.size() - i);
+        std::copy(p1.begin() + i, p1.end(), answer.begin() + answer.size() + i - p1.size());
+    }
+
+    if (j < p2.size())
+    {
+        answer.resize(answer.size() + p2.size() - j);
+        std::copy(p2.begin() + j, p2.end(), answer.begin() + answer.size() + j - p2.size());
+    }
 }
 
 void complement_posting(const vector<int> &p,  
