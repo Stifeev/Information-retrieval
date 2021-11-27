@@ -191,10 +191,10 @@ bool create_blocks(const path &path2corpus, const path path2blocks,
 
     /* Создание блоков */
  
-    #pragma omp parallel num_threads(omp_num_threads)                                                                           \
-                         shared(pathes)                                                                                         \
-                         firstprivate(n_files,                                                                                  \
-                                      path2blocks,      \
+    #pragma omp parallel num_threads(omp_num_threads)       \
+                         shared(pathes)                     \
+                         firstprivate(n_files,              \
+                                      path2blocks,          \
                                       path2lemmatizator)
     {
         int id = omp_get_thread_num(),
@@ -555,8 +555,10 @@ bool load_index(const path &path2index,
 
     INFO_HANDLE(L"Чтение термов");
 
+    time_t current_sec = 0, current_time;
     for (i = 0; i < n_terms; i++)
     {
+        NOTIFY(current_sec, 1, L"\rОсталось термов: %12d", n_terms - i);
         fread(&n_chars, sizeof(uint), 1, fp_terms);
         term.resize(n_chars);
 
@@ -569,6 +571,7 @@ bool load_index(const path &path2index,
         terms[term] = { offset, (int)n_docs };
         id2term[i] = term;
     }
+    wprintf(L"\rОсталось термов: %12d\n", 0);
 
     fclose(fp_terms);
     fclose(fp_postings);

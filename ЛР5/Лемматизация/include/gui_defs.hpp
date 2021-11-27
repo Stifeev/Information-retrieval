@@ -55,8 +55,8 @@ int n_pages = 1;
 
 #define RADIUS_DETAILS 20
 
-int Wndx = 3000;
-int Wndy = 100;
+int Wndx = 500;
+int Wndy = 200;
 
 path path2lemmatizator = L"python\\dist\\lemmatizator\\lemmatizator.exe";       // путь к скомпилированному скрипту
 path path2request_parser = L"python\\dist\\request_parser\\request_parser.exe"; // путь к скомпилированному скрипту
