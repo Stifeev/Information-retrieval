@@ -242,6 +242,8 @@ bool ApplySearch(const wstring &line_request, dict<wstring, item> &terms)
     }
     wprintfc(BLUE | RED, L"\" найдено %lu документов\n", posting_list.size());
 
+    INFO_HANDLE("Обработка результатов поиска");
+
     /* Вычисление компонент вектора запроса */
 
     request_wt.clear();
@@ -310,13 +312,13 @@ bool ApplySearch(const wstring &line_request, dict<wstring, item> &terms)
                     weight += ptr->second * doc_wt[i][ptr->first];
                 }
             }
-            weights[i] = { weight, posting_list[i] }; // вес + индекс документа
+            weights[i] = { posting_list[i], weight }; // вес + индекс документа
         }
     }
 
     auto comp = [](const pair<uint, double> &l, const pair<uint, double> &r) -> bool
     {
-        return l.first > r.first;
+        return l.second > r.second;
     };
 
     std::sort(weights.begin(), weights.end(), comp); // сортировочка
@@ -371,7 +373,7 @@ bool ShowResult(int n_page)
         for (k = id; k < m; k += id_offset)
         {
             i = n_page * 50 + k;
-            get_doc_by_id(weights[i].second, n_docs, fp_docs, doc);
+            get_doc_by_id(weights[i].first, n_docs, fp_docs, doc);
 
             if (fetch_page_url(doc, table[k].page_url))
             {
@@ -399,7 +401,7 @@ bool ShowResult(int n_page)
 
             for (auto ptr : request_wt) // получаем координаты термов для каждого терма из запроса
             {
-                get_term_coords(fp_postings, ptr.first, weights[i].second,
+                get_term_coords(fp_postings, ptr.first, weights[i].first,
                                 terms, starts, ends, work);
 
                 if (starts.size() > 0)
