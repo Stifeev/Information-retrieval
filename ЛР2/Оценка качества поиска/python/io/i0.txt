@@ -1,1 +1,0 @@
-{"page_url": "http://filmplace.ru/film/va-rock-am-ring.html", "title": "VA: Rock Am Ring", "alternative_titles": [], "genres": ["Концертное видео"], "description": "Rock am Ring — один из крупнейших рок-фестивалей, ежегодно проходящий в Германии в первый выходной июня.", "date": "01.01.2012", "duration": "2:58:32", "comments": []}
