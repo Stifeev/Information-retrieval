@@ -7,7 +7,7 @@
 #include "../include/gui_params_window.hpp"
 #include "../resource.h"
 
-HWND hEditControl = NULL;    // дескриптор текстовой панели с вводом
+HWND hEditControl = NULL;    // РґРµСЃРєСЂРёРїС‚РѕСЂ С‚РµРєСЃС‚РѕРІРѕР№ РїР°РЅРµР»Рё СЃ РІРІРѕРґРѕРј
 HWND hList = NULL;
 HWND label = NULL;
 
@@ -32,31 +32,31 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR args, int nCmdS
     SetStdHandle(STD_ERROR_HANDLE, hConsole);
     SetStdHandle(STD_INPUT_HANDLE, hConsoleIn);
  
-    setlocale(LC_CTYPE, "rus"); // кодировка на поток вывода
-    SetConsoleCP(1251);         // кодировка на поток ввода
-    SetConsoleOutputCP(1251);   // кодировка на поток вывода
+    setlocale(LC_CTYPE, "rus"); // РєРѕРґРёСЂРѕРІРєР° РЅР° РїРѕС‚РѕРє РІС‹РІРѕРґР°
+    SetConsoleCP(1251);         // ГЄГ®Г¤ГЁГ°Г®ГўГЄГ  Г­Г  ГЇГ®ГІГ®ГЄ ГўГўГ®Г¤Г 
+    SetConsoleOutputCP(1251);   // ГЄГ®Г¤ГЁГ°Г®ГўГЄГ  Г­Г  ГЇГ®ГІГ®ГЄ ГўГ»ГўГ®Г¤Г 
 
-    wprintfc(GREEN, L"Консоль подключена!\n");
+    wprintfc(GREEN, L"ГЉГ®Г­Г±Г®Г«Гј ГЇГ®Г¤ГЄГ«ГѕГ·ГҐГ­Г !\n");
 
-    WNDCLASSW NWC = {0}; // новый класс окна
+    WNDCLASSW NWC = {0}; // Г­Г®ГўГ»Г© ГЄГ«Г Г±Г± Г®ГЄГ­Г 
 
     This = hInst;
     NWC.hInstance = This;
     NWC.hCursor = LoadCursor(NULL, IDC_ARROW);
     NWC.hIcon = LoadIcon(This, MAKEINTRESOURCE(IDI_ICON1));
-    NWC.lpszClassName = L"MainWndClass"; // имя класса окна
+    NWC.lpszClassName = L"MainWndClass"; // ГЁГ¬Гї ГЄГ«Г Г±Г±Г  Г®ГЄГ­Г 
     NWC.hbrBackground = (HBRUSH)COLOR_WINDOW;
     NWC.lpfnWndProc = MainProcedure;
 
-    if (!RegisterClassW(&NWC)) // регистрация класса окна
+    if (!RegisterClassW(&NWC)) // Г°ГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї ГЄГ«Г Г±Г±Г  Г®ГЄГ­Г 
     {
         return -1;
     }
 
-    hMainWnd = CreateWindowW(L"MainWndClass", L"Поиск по корпусу документов", WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+    hMainWnd = CreateWindowW(L"MainWndClass", L"ГЏГ®ГЁГ±ГЄ ГЇГ® ГЄГ®Г°ГЇГіГ±Гі Г¤Г®ГЄГіГ¬ГҐГ­ГІГ®Гў", WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                              Wndx, Wndy,
                              1200, 930,
-                             HWND_DESKTOP, // дескриптор родительского окна
+                             HWND_DESKTOP, // Г¤ГҐГ±ГЄГ°ГЁГЇГІГ®Г° Г°Г®Г¤ГЁГІГҐГ«ГјГ±ГЄГ®ГЈГ® Г®ГЄГ­Г 
                              NULL, This, NULL);
     
     MSG MainMessage = {0};
@@ -75,11 +75,11 @@ void MainWndAddMenu(HWND hWnd)
 
     HMENU ParamsMenu = CreateMenu();
 
-    AppendMenuW(ParamsMenu, MF_STRING, MenuParamsClicked, L"Параметры");
+    AppendMenuW(ParamsMenu, MF_STRING, MenuParamsClicked, L"ГЏГ Г°Г Г¬ГҐГІГ°Г»");
     AppendMenuW(ParamsMenu, MF_SEPARATOR, NULL, NULL);
-    AppendMenuW(ParamsMenu, MF_STRING, MenuExitClicked, L"Выход");
+    AppendMenuW(ParamsMenu, MF_STRING, MenuExitClicked, L"Г‚Г»ГµГ®Г¤");
 
-    AppendMenuW(RootMenu, MF_POPUP, (UINT_PTR)ParamsMenu, L"Параметры");
+    AppendMenuW(RootMenu, MF_POPUP, (UINT_PTR)ParamsMenu, L"ГЏГ Г°Г Г¬ГҐГІГ°Г»");
 
     SetMenu(hWnd, RootMenu);
 }
@@ -93,35 +93,35 @@ void MainWndAddWidgets(HWND hWnd)
                                  NULL, NULL);
 
     RECT rect = get_rect(hWnd, hEditControl);
-    HWND wind = CreateWindowW(L"button", L"Поиск", WS_VISIBLE | WS_CHILD | ES_CENTER,
+    HWND wind = CreateWindowW(L"button", L"ГЏГ®ГЁГ±ГЄ", WS_VISIBLE | WS_CHILD | ES_CENTER,
                               rect.right + 10, rect.top,
                               120, 30,
                               hWnd, (HMENU)ButtonSearchClicked,
                               NULL, NULL);
 
     rect = get_rect(hWnd, wind);
-    wind = CreateWindowW(L"button", L"Загрузить индекс", WS_VISIBLE | WS_CHILD | ES_CENTER,
+    wind = CreateWindowW(L"button", L"Г‡Г ГЈГ°ГіГ§ГЁГІГј ГЁГ­Г¤ГҐГЄГ±", WS_VISIBLE | WS_CHILD | ES_CENTER,
                          rect.right + 10, rect.top,
                          150, 30,
                          hWnd, (HMENU)ButtonLoadIndexClicked,
                          NULL, NULL);
 
     rect = get_rect(hWnd, wind);
-    wind = CreateWindowW(L"button", L"Построить индекс", WS_VISIBLE | WS_CHILD | ES_CENTER,
+    wind = CreateWindowW(L"button", L"ГЏГ®Г±ГІГ°Г®ГЁГІГј ГЁГ­Г¤ГҐГЄГ±", WS_VISIBLE | WS_CHILD | ES_CENTER,
                          rect.right + 10, rect.top,
                          150, 30,
                          hWnd, (HMENU)ButtonCreateIndexClicked,
                          NULL, NULL);
 
     rect = get_rect(hWnd, wind);
-    wind = CreateWindowW(L"button", L"Выполнить слияние", WS_VISIBLE | WS_CHILD | ES_CENTER,
+    wind = CreateWindowW(L"button", L"Г‚Г»ГЇГ®Г«Г­ГЁГІГј Г±Г«ГЁГїГ­ГЁГҐ", WS_VISIBLE | WS_CHILD | ES_CENTER,
                          rect.right + 10, rect.top,
                          150, 30,
                          hWnd, (HMENU)ButtonMergeIndexClicked,
                          NULL, NULL);
 
     rect = get_rect(hWnd, hEditControl);
-    hList = CreateWindowW(WC_LISTVIEWW, L"Список",
+    hList = CreateWindowW(WC_LISTVIEWW, L"Г‘ГЇГЁГ±Г®ГЄ",
                           WS_VISIBLE | WS_CHILD | WS_BORDER | LVS_REPORT | LVS_EX_GRIDLINES | LVS_EDITLABELS | WS_VSCROLL,
                           rect.left, rect.bottom + 10,
                           1150, 700,
@@ -137,23 +137,23 @@ void MainWndAddWidgets(HWND hWnd)
 
     lvc.fmt = LVCFMT_LEFT;
     lvc.cx = 100;
-    lvc.pszText = (LPWSTR)L"Ссылка";
+    lvc.pszText = (LPWSTR)L"Г‘Г±Г»Г«ГЄГ ";
     lvc.iSubItem = 0;
     SendMessageW(hList, LVM_INSERTCOLUMNW, 0, (LPARAM)&lvc);
 
     lvc.fmt = LVCFMT_LEFT;
     lvc.cx = 300;
-    lvc.pszText = (LPWSTR)L"Заголовок";
+    lvc.pszText = (LPWSTR)L"Г‡Г ГЈГ®Г«Г®ГўГ®ГЄ";
     lvc.iSubItem = 1;
     SendMessageW(hList, LVM_INSERTCOLUMNW, 1, (LPARAM)&lvc);
 
     lvc.fmt = LVCFMT_LEFT;
     lvc.cx = rc.right - rc.left - 100 - 300;
-    lvc.pszText = (LPWSTR)L"Подробности";
+    lvc.pszText = (LPWSTR)L"ГЏГ®Г¤Г°Г®ГЎГ­Г®Г±ГІГЁ";
     lvc.iSubItem = 2;
     SendMessageW(hList, LVM_INSERTCOLUMNW, 2, (LPARAM)&lvc);
 
-    AddItemToList(0, L"Здесь", L"будут", L"результаты");
+    AddItemToList(0, L"Г‡Г¤ГҐГ±Гј", L"ГЎГіГ¤ГіГІ", L"Г°ГҐГ§ГіГ«ГјГІГ ГІГ»");
 
     rect = get_rect(hWnd, hList);
 
@@ -224,37 +224,37 @@ bool ApplySearch(vector<wstring> &infix_request,
 
     if (!correct)
     {
-        wprintfc(RED, L"Некорректный запрос\n");
+        wprintfc(RED, L"ГЌГҐГЄГ®Г°Г°ГҐГЄГІГ­Г»Г© Г§Г ГЇГ°Г®Г±\n");
         return false;
     }
 
     path path2postings = path(path2index) / "postings_list.data";
     FILE *fp_postings = NULL;
     
-    ERROR_HANDLE(fp_postings = _wfopen(path2postings.c_str(), L"rb"), return false, "Неверный путь к индексу");
+    ERROR_HANDLE(fp_postings = _wfopen(path2postings.c_str(), L"rb"), return false, "ГЌГҐГўГҐГ°Г­Г»Г© ГЇГіГІГј ГЄ ГЁГ­Г¤ГҐГЄГ±Гі");
     vector<int> posting_list = {};
 
     get_response(postfix_request, fp_postings, terms, n_docs,
                  posting_list);
     fclose(fp_postings);
 
-    wprintfc(BLUE | RED, L"По запросу: \' ");
+    wprintfc(BLUE | RED, L"ГЏГ® Г§Г ГЇГ°Г®Г±Гі: \' ");
     for (auto iter : infix_request)
     {
         wprintfc(BLUE | RED, L"%s ", iter.c_str());
     }
-    wprintfc(BLUE | RED, L"\' найдено %lu документов\n", posting_list.size());
+    wprintfc(BLUE | RED, L"\' Г­Г Г©Г¤ГҐГ­Г® %lu Г¤Г®ГЄГіГ¬ГҐГ­ГІГ®Гў\n", posting_list.size());
 
-    INFO_HANDLE("Обработка результатов поиска");
+    INFO_HANDLE("ГЋГЎГ°Г ГЎГ®ГІГЄГ  Г°ГҐГ§ГіГ«ГјГІГ ГІГ®Гў ГЇГ®ГЁГ±ГЄГ ");
 
-    /* Вычисление компонент вектора запроса */
+    /* Г‚Г»Г·ГЁГ±Г«ГҐГ­ГЁГҐ ГЄГ®Г¬ГЇГ®Г­ГҐГ­ГІ ГўГҐГЄГІГ®Г°Г  Г§Г ГЇГ°Г®Г±Г  */
 
     request_wt.clear();
 
     int i, j;
     for (i = 0; i < postfix_request.size(); i++)
     {
-        if (!is_term(postfix_request[i]) || terms.find(postfix_request[i]) == terms.end())  // не терм, либо его нет в корпусе
+        if (!is_term(postfix_request[i]) || terms.find(postfix_request[i]) == terms.end())  // Г­ГҐ ГІГҐГ°Г¬, Г«ГЁГЎГ® ГҐГЈГ® Г­ГҐГІ Гў ГЄГ®Г°ГЇГіГ±ГҐ
             continue;
 
         if (request_wt.find(postfix_request[i]) == request_wt.end())
@@ -269,13 +269,13 @@ bool ApplySearch(vector<wstring> &infix_request,
 
     double norm;
 
-    foreach(ptr, request_wt) // находим term_wt
+    foreach(ptr, request_wt) // Г­Г ГµГ®Г¤ГЁГ¬ term_wt
     {
         ptr->second = (1 + log10(ptr->second)) * log10(n_docs / (double)terms[ptr->first].df);
     }
 
     norm = 0;
-    for (auto ptr : request_wt) // считаем норму
+    for (auto ptr : request_wt) // Г±Г·ГЁГІГ ГҐГ¬ Г­Г®Г°Г¬Гі
     {
         norm += ptr.second * ptr.second;
     }
@@ -285,7 +285,7 @@ bool ApplySearch(vector<wstring> &infix_request,
     vector<double> req_wt(request_wt.size());
 
     i = 0;
-    foreach(ptr, request_wt) // нормализуем и заполняем вектора с идентификаторами
+    foreach(ptr, request_wt) // Г­Г®Г°Г¬Г Г«ГЁГ§ГіГҐГ¬ ГЁ Г§Г ГЇГ®Г«Г­ГїГҐГ¬ ГўГҐГЄГІГ®Г°Г  Г± ГЁГ¤ГҐГ­ГІГЁГґГЁГЄГ ГІГ®Г°Г Г¬ГЁ
     {
         ptr->second /= norm;
 
@@ -294,11 +294,11 @@ bool ApplySearch(vector<wstring> &infix_request,
         i++;
     }
 
-    /* Вычисление компонент вектора документа */
+    /* Г‚Г»Г·ГЁГ±Г«ГҐГ­ГЁГҐ ГЄГ®Г¬ГЇГ®Г­ГҐГ­ГІ ГўГҐГЄГІГ®Г°Г  Г¤Г®ГЄГіГ¬ГҐГ­ГІГ  */
 
     vector<vector<double>> doc_wt(posting_list.size(), 
                                   vector<double>(request_wt.size()));
-    weights.resize(posting_list.size()); // долгожданные веса
+    weights.resize(posting_list.size()); // Г¤Г®Г«ГЈГ®Г¦Г¤Г Г­Г­Г»ГҐ ГўГҐГ±Г 
     
     #pragma omp parallel num_threads(omp_num_threads)                   \
                          shared(doc_wt, posting_list, weights)          \
@@ -318,11 +318,11 @@ bool ApplySearch(vector<wstring> &infix_request,
             get_terms_weights_in_doc(path2index, posting_list[i], terms_id, doc_wt[i], iwork, work);
 
             weight = 0;
-            for(j = 0; j < req_wt.size(); j++) // цикл по терминам из запроса
+            for(j = 0; j < req_wt.size(); j++) // Г¶ГЁГЄГ« ГЇГ® ГІГҐГ°Г¬ГЁГ­Г Г¬ ГЁГ§ Г§Г ГЇГ°Г®Г±Г 
             {
                 weight += req_wt[j] * doc_wt[i][j];
             }
-            weights[i] = { posting_list[i], weight }; // вес + индекс документа
+            weights[i] = { posting_list[i], weight }; // ГўГҐГ± + ГЁГ­Г¤ГҐГЄГ± Г¤Г®ГЄГіГ¬ГҐГ­ГІГ 
         }
     }
 
@@ -331,7 +331,7 @@ bool ApplySearch(vector<wstring> &infix_request,
         return l.second > r.second;
     };
 
-    std::sort(weights.begin(), weights.end(), comp); // сортировочка
+    std::sort(weights.begin(), weights.end(), comp); // Г±Г®Г°ГІГЁГ°Г®ГўГ®Г·ГЄГ 
 
     n_pages = ceil(weights.size() / 50.);
     num_page = 0;
@@ -357,7 +357,7 @@ bool ShowResult(int n_page)
         vector<int> begin;
         vector<int> end;
     };
-    vector<item> table(m, { L"", L"", L"", vector<int>(0), vector<int>(0) }); // таблица ответов
+    vector<item> table(m, { L"", L"", L"", vector<int>(0), vector<int>(0) }); // ГІГ ГЎГ«ГЁГ¶Г  Г®ГІГўГҐГІГ®Гў
     
     #pragma omp parallel num_threads(omp_num_threads)                     \
                          shared(weights, table, terms)                    \
@@ -391,7 +391,7 @@ bool ShowResult(int n_page)
             }
             else
             {
-                table[k].page_url = L"Не удалось извлечь ссылку\n";
+                table[k].page_url = L"ГЌГҐ ГіГ¤Г Г«Г®Г±Гј ГЁГ§ГўГ«ГҐГ·Гј Г±Г±Г»Г«ГЄГі\n";
             }
 
             if (fetch_title(doc, table[k].title) || 
@@ -400,7 +400,7 @@ bool ShowResult(int n_page)
             }
             else
             {
-                table[k].title = L"Не удалось извлечь заголовок\n";
+                table[k].title = L"ГЌГҐ ГіГ¤Г Г«Г®Г±Гј ГЁГ§ГўГ«ГҐГ·Гј Г§Г ГЈГ®Г«Г®ГўГ®ГЄ\n";
             }
 
             rc.resize(0);
@@ -409,7 +409,7 @@ bool ShowResult(int n_page)
             lc.push_back(-RADIUS_DETAILS);
             rc.push_back(-RADIUS_DETAILS);
 
-            for (auto ptr : request_wt) // получаем координаты термов для каждого терма из запроса
+            for (auto ptr : request_wt) // ГЇГ®Г«ГіГ·Г ГҐГ¬ ГЄГ®Г®Г°Г¤ГЁГ­Г ГІГ» ГІГҐГ°Г¬Г®Гў Г¤Г«Гї ГЄГ Г¦Г¤Г®ГЈГ® ГІГҐГ°Г¬Г  ГЁГ§ Г§Г ГЇГ°Г®Г±Г 
             {
                 get_term_coords(fp_postings, ptr.first, weights[i].first,
                                 terms, starts, ends, work);
@@ -446,19 +446,19 @@ bool ShowResult(int n_page)
                     table[k].desc += L"..";
                 }
 
-                /* выводим всё в радиусе R слева */
+                /* ГўГ»ГўГ®Г¤ГЁГ¬ ГўГ±Вё Гў Г°Г Г¤ГЁГіГ±ГҐ R Г±Г«ГҐГўГ  */
                 str.resize(r0 - l0);
                 std::copy(doc.begin() + l0, doc.begin() + r0, str.begin());
                 table[k].desc += str;
 
-                /* выводим токен */
+                /* ГўГ»ГўГ®Г¤ГЁГ¬ ГІГ®ГЄГҐГ­ */
                 str.resize(r1 - l1);
                 std::copy(doc.begin() + l1, doc.begin() + r1, str.begin());
                 table[k].begin.push_back(table[k].desc.size());
                 table[k].end.push_back(table[k].desc.size() + str.size());
                 table[k].desc += str;
 
-                /* выводим всё в радиусе R справа */
+                /* ГўГ»ГўГ®Г¤ГЁГ¬ ГўГ±Вё Гў Г°Г Г¤ГЁГіГ±ГҐ R Г±ГЇГ°Г ГўГ  */
                 str.resize(r2 - l2);
                 std::copy(doc.begin() + l2, doc.begin() + r2, str.begin());
                 table[k].desc += str;
@@ -474,30 +474,30 @@ bool ShowResult(int n_page)
         fclose(fp_docs);
     }
 
-    /* Показываем результат в консоль и список */
+    /* ГЏГ®ГЄГ Г§Г»ГўГ ГҐГ¬ Г°ГҐГ§ГіГ«ГјГІГ ГІ Гў ГЄГ®Г­Г±Г®Г«Гј ГЁ Г±ГЇГЁГ±Г®ГЄ */
     for (k = 0; k < m; k++)
     {
         wprintfc(BLUE, L"page_url: %s\n", table[k].page_url.c_str());
 
         wprintf(L"title: \"%s\"\n", table[k].title.c_str());
 
-        wprintf(L"Детали: ");
+        wprintf(L"Г„ГҐГІГ Г«ГЁ: ");
 
         table[k].begin.push_back(table[k].desc.size());
         table[k].end.push_back(table[k].desc.size());
 
-        wprintf(L"%s", table[k].desc.substr(0, table[k].begin[0]).c_str()); // выводим то, что слева
+        wprintf(L"%s", table[k].desc.substr(0, table[k].begin[0]).c_str()); // ГўГ»ГўГ®Г¤ГЁГ¬ ГІГ®, Г·ГІГ® Г±Г«ГҐГўГ 
 
         for (j = 0; j < table[k].begin.size() - 1; j++)
         {
-            wprintfc(GREEN, L"%s", table[k].desc.substr(table[k].begin[j], table[k].end[j] - table[k].begin[j]).c_str()); // хайлайтим терм
+            wprintfc(GREEN, L"%s", table[k].desc.substr(table[k].begin[j], table[k].end[j] - table[k].begin[j]).c_str()); // ГµГ Г©Г«Г Г©ГІГЁГ¬ ГІГҐГ°Г¬
 
-            for (i = table[k].begin[j]; i < table[k].end[j]; i++) // Перевод в верхний регистр термов (хайлайт)
+            for (i = table[k].begin[j]; i < table[k].end[j]; i++) // ГЏГҐГ°ГҐГўГ®Г¤ Гў ГўГҐГ°ГµГ­ГЁГ© Г°ГҐГЈГЁГ±ГІГ° ГІГҐГ°Г¬Г®Гў (ГµГ Г©Г«Г Г©ГІ)
             {
                 table[k].desc[i] = towupper(table[k].desc[i]);
             }
 
-            wprintf(L"%s", table[k].desc.substr(table[k].end[j], table[k].begin[j + 1] - table[k].end[j]).c_str()); // выводим то, что справа
+            wprintf(L"%s", table[k].desc.substr(table[k].end[j], table[k].begin[j + 1] - table[k].end[j]).c_str()); // ГўГ»ГўГ®Г¤ГЁГ¬ ГІГ®, Г·ГІГ® Г±ГЇГ°Г ГўГ 
         }
         wprintf(L"\n");
         AddItemToList(k, table[k].page_url, table[k].title, table[k].desc);
@@ -523,33 +523,33 @@ RECT get_rect(HWND parent, HWND child)
 
 void ButtonLoadIndexClickedHandler()                                                                   
 {                                                                                                      
-    WARNING_HANDLE(fs::exists(path2corpus), break, L"Укажите правильный путь к корпусу в параметрах"); 
-    WARNING_HANDLE(fs::exists(path2index), break, L"Укажите правильный путь к индексу в параметрах");  
+    WARNING_HANDLE(fs::exists(path2corpus), break, L"Г“ГЄГ Г¦ГЁГІГҐ ГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГЇГіГІГј ГЄ ГЄГ®Г°ГЇГіГ±Гі Гў ГЇГ Г°Г Г¬ГҐГІГ°Г Гµ"); 
+    WARNING_HANDLE(fs::exists(path2index), break, L"Г“ГЄГ Г¦ГЁГІГҐ ГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГЇГіГІГј ГЄ ГЁГ­Г¤ГҐГЄГ±Гі Гў ГЇГ Г°Г Г¬ГҐГІГ°Г Гµ");  
                                                                                                        
     load_index(path(path2index), terms, &n_docs);                                                      
     terms_list = vector<pair<wstring, int>>(terms.size());                                             
                                                                                                        
     int i = 0;                                                                                         
     time_t current_sec;                                                                                
-    SETUP_PROGRESS(terms.size(), &current_sec, L"Создание линейного списка терминов");                 
+    SETUP_PROGRESS(terms.size(), &current_sec, L"Г‘Г®Г§Г¤Г Г­ГЁГҐ Г«ГЁГ­ГҐГ©Г­Г®ГЈГ® Г±ГЇГЁГ±ГЄГ  ГІГҐГ°Г¬ГЁГ­Г®Гў");                 
     foreach(ptr, terms)                                                                                
     {                                                                                                  
         terms_list[i] = { ptr->first, ptr->second.df };                                                
         i++;                                                                                           
-        UPDATE_PROGRESS(i, terms.size(), &current_sec, L"Создание линейного списка терминов");         
+        UPDATE_PROGRESS(i, terms.size(), &current_sec, L"Г‘Г®Г§Г¤Г Г­ГЁГҐ Г«ГЁГ­ГҐГ©Г­Г®ГЈГ® Г±ГЇГЁГ±ГЄГ  ГІГҐГ°Г¬ГЁГ­Г®Гў");         
     }                                                                                                  
                                                                                                        
-    INFO_HANDLE(L"Загрузка завершена");                                                                
+    INFO_HANDLE(L"Г‡Г ГЈГ°ГіГ§ГЄГ  Г§Г ГўГҐГ°ГёГҐГ­Г ");                                                                
 }
 
 void ButtonSearchClickedHandler()                                                           
 {                                                                                           
-    WARNING_HANDLE(fs::exists(path2corpus), return, L"Укажите путь к корпусу");       
-    WARNING_HANDLE(fs::exists(path2index), return, L"Укажите путь к индексу");
+    WARNING_HANDLE(fs::exists(path2corpus), return, L"Г“ГЄГ Г¦ГЁГІГҐ ГЇГіГІГј ГЄ ГЄГ®Г°ГЇГіГ±Гі");       
+    WARNING_HANDLE(fs::exists(path2index), return, L"Г“ГЄГ Г¦ГЁГІГҐ ГЇГіГІГј ГЄ ГЁГ­Г¤ГҐГЄГ±Гі");
                                                                                             
     wchar request[MAX_PATH];                                                                
     GetWindowTextW(hEditControl, request, MAX_PATH);                                        
-    wprintfc(GREEN, L"Запрос: \' %s \'\n", request);                                        
+    wprintfc(GREEN, L"Г‡Г ГЇГ°Г®Г±: \' %s \'\n", request);                                        
     last_request = request;                                                                 
                                                                                             
     vector<wstring> infix_request;                                                          
@@ -561,7 +561,7 @@ void ButtonSearchClickedHandler()
     ShowResult(0);                                                                          
     WriteDefaultParams();                                                                   
                                                                                             
-    if (weights.size() < 30) /* проверка опечаток  */                                       
+    if (weights.size() < 30) /* ГЇГ°Г®ГўГҐГ°ГЄГ  Г®ГЇГҐГ·Г ГІГ®ГЄ  */                                       
     {                                                                                       
         vector<wstring> correct_request, no_lemma_request;                                  
         string_to_infix_request(last_request, no_lemma_request, path2request_parser, false);
@@ -595,11 +595,11 @@ void ButtonSearchClickedHandler()
         }                                                                                         
                                                                                                   
         int mb = MessageBoxW(NULL,                                                                
-                             (wstring(L"По запросу: ") + mes1 +                                                    
-                              wstring(L"\nнайдено ") + std::to_wstring(weights.size()) +                           
-                              wstring(L" документов\n") +                                                          
-                              wstring(L"Повторить с запросом: ") + mes2 + wstring(L"?")).c_str(),                  
-                             L"Возможные опечатки",                                                                
+                             (wstring(L"ГЏГ® Г§Г ГЇГ°Г®Г±Гі: ") + mes1 +                                                    
+                              wstring(L"\nГ­Г Г©Г¤ГҐГ­Г® ") + std::to_wstring(weights.size()) +                           
+                              wstring(L" Г¤Г®ГЄГіГ¬ГҐГ­ГІГ®Гў\n") +                                                          
+                              wstring(L"ГЏГ®ГўГІГ®Г°ГЁГІГј Г± Г§Г ГЇГ°Г®Г±Г®Г¬: ") + mes2 + wstring(L"?")).c_str(),                  
+                             L"Г‚Г®Г§Г¬Г®Г¦Г­Г»ГҐ Г®ГЇГҐГ·Г ГІГЄГЁ",                                                                
                              MB_ICONEXCLAMATION | MB_YESNO);                                                       
                                                                                                   
         if (mb == IDYES)                                                                          
@@ -634,39 +634,39 @@ LRESULT CALLBACK MainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
         case MenuExitClicked:
             PostQuitMessage(0);
             break;
-        case MenuParamsClicked: // нажатие на параметры
+        case MenuParamsClicked: // Г­Г Г¦Г ГІГЁГҐ Г­Г  ГЇГ Г°Г Г¬ГҐГІГ°Г»
             if(IsWindow(hParamsWnd)) break;
             RegisterParamsWindow(This);
             hParamsWnd = CreateParamsWindow(This, hMainWnd);
             break;
-        case ButtonSearchClicked: // кнопка поиска нажата
+        case ButtonSearchClicked: // ГЄГ­Г®ГЇГЄГ  ГЇГ®ГЁГ±ГЄГ  Г­Г Г¦Г ГІГ 
             ButtonSearchClickedHandler();
 
             break;
         case ButtonCreateIndexClicked:
-            WARNING_HANDLE(fs::exists(path2corpus), goto DEFAULT, L"Укажите путь к корпусу");
+            WARNING_HANDLE(fs::exists(path2corpus), goto DEFAULT, L"Г“ГЄГ Г¦ГЁГІГҐ ГЇГіГІГј ГЄ ГЄГ®Г°ГЇГіГ±Гі");
 
-            INFO_HANDLE(L"Создание блочного индекса корпуса: %s", path2corpus.c_str());
+            INFO_HANDLE(L"Г‘Г®Г§Г¤Г Г­ГЁГҐ ГЎГ«Г®Г·Г­Г®ГЈГ® ГЁГ­Г¤ГҐГЄГ±Г  ГЄГ®Г°ГЇГіГ±Г : %s", path2corpus.c_str());
             create_blocks(path2corpus, path2blocks, path2lemmatizator, omp_num_threads);
-            INFO_HANDLE(L"Создание блочного индекса окончено. Выполните слияние");
+            INFO_HANDLE(L"Г‘Г®Г§Г¤Г Г­ГЁГҐ ГЎГ«Г®Г·Г­Г®ГЈГ® ГЁГ­Г¤ГҐГЄГ±Г  Г®ГЄГ®Г­Г·ГҐГ­Г®. Г‚Г»ГЇГ®Г«Г­ГЁГІГҐ Г±Г«ГЁГїГ­ГЁГҐ");
 
             break;
         case ButtonMergeIndexClicked:
-            INFO_HANDLE(L"Слияние блочного индекса");
+            INFO_HANDLE(L"Г‘Г«ГЁГїГ­ГЁГҐ ГЎГ«Г®Г·Г­Г®ГЈГ® ГЁГ­Г¤ГҐГЄГ±Г ");
             merge_blocks(path2blocks, path2index);
-            INFO_HANDLE(L"Слияние блочного индекса завершено");
+            INFO_HANDLE(L"Г‘Г«ГЁГїГ­ГЁГҐ ГЎГ«Г®Г·Г­Г®ГЈГ® ГЁГ­Г¤ГҐГЄГ±Г  Г§Г ГўГҐГ°ГёГҐГ­Г®");
 
-            INFO_HANDLE(L"Вычисление статистики");
+            INFO_HANDLE(L"Г‚Г»Г·ГЁГ±Г«ГҐГ­ГЁГҐ Г±ГІГ ГІГЁГ±ГІГЁГЄГЁ");
             calculate_doc_tf(path2index);
-            INFO_HANDLE(L"Вычисление статистики завершено");
+            INFO_HANDLE(L"Г‚Г»Г·ГЁГ±Г«ГҐГ­ГЁГҐ Г±ГІГ ГІГЁГ±ГІГЁГЄГЁ Г§Г ГўГҐГ°ГёГҐГ­Г®");
 
-            /*INFO_HANDLE(L"Очистка папки с блочным индексом");
+            /*INFO_HANDLE(L"ГЋГ·ГЁГ±ГІГЄГ  ГЇГ ГЇГЄГЁ Г± ГЎГ«Г®Г·Г­Г»Г¬ ГЁГ­Г¤ГҐГЄГ±Г®Г¬");
             for (auto iter : fs::recursive_directory_iterator(path2blocks))
             {
                 fs::remove(iter);
             }*/
 
-            INFO_HANDLE(L"Успешно. Индекс создан в %s", path2index.c_str());
+            INFO_HANDLE(L"Г“Г±ГЇГҐГёГ­Г®. Г€Г­Г¤ГҐГЄГ± Г±Г®Г§Г¤Г Г­ Гў %s", path2index.c_str());
 
             ButtonLoadIndexClickedHandler();
 
@@ -706,7 +706,7 @@ LRESULT CALLBACK MainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
         break;
 
     case WM_CREATE:
-        ReadDefaultParams(); // чтение параметров по умолчанию из ini.config
+        ReadDefaultParams(); // Г·ГІГҐГ­ГЁГҐ ГЇГ Г°Г Г¬ГҐГІГ°Г®Гў ГЇГ® ГіГ¬Г®Г«Г·Г Г­ГЁГѕ ГЁГ§ ini.config
         MainWndAddMenu(hWnd);
         MainWndAddWidgets(hWnd);
         break;
