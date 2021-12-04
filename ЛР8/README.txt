@@ -1,1 +1,1 @@
-Ссылка на исходники: https://github.com/Stifeev/Information-retrieval/tree/main/Курсовой%20проект/Исправление%20опечаток 
+РЎСЃС‹Р»РєР° РЅР° РёСЃС…РѕРґРЅРёРєРё: https://github.com/Stifeev/Information-retrieval/tree/main/ГЉГіГ°Г±Г®ГўГ®Г©%20ГЇГ°Г®ГҐГЄГІ/Г€Г±ГЇГ°Г ГўГ«ГҐГ­ГЁГҐ%20Г®ГЇГҐГ·Г ГІГ®ГЄ 
